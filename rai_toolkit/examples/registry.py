@@ -757,6 +757,6 @@ DEMO_EXAMPLE_BUNDLES: dict[str, list[str]] = {
     ],
     "financial_services": ["finqa-sample"],
     "government": ["mit-risk-smoke"],
+    "hr": ["bbq", "bold"],
     "general": ["mit-risk-smoke"],
 }
-

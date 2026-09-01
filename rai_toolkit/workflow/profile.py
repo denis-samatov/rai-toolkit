@@ -23,6 +23,7 @@ class Industry(str, enum.Enum):
     HEALTHCARE = "healthcare"
     FINANCIAL_SERVICES = "financial_services"
     GOVERNMENT = "government"
+    HR = "hr"
     GENERAL = "general"
 
 

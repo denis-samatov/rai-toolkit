@@ -107,7 +107,7 @@ def _build_datasets_parser(sub: argparse._SubParsersAction) -> None:
     )
     demo_p.add_argument(
         "--preset",
-        choices=["healthcare", "financial_services", "government", "general"],
+        choices=["healthcare", "financial_services", "government", "hr", "general"],
         default=None,
         help="Only show the demo dataset bundle for one preset.",
     )

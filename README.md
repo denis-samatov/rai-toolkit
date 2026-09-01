@@ -135,7 +135,7 @@ Built-in coverage for:
 - **MIT AI Risk Repository** (24 categories, 7 domains)
 - **NIST AI RMF 1.0** (Govern / Map / Measure / Manage)
 - **EU AI Act** (Articles 9-15, high-risk requirements)
-- **Industry presets**: healthcare, financial services, government, general
+- **Industry presets**: healthcare, financial services, government, HR, general
 
 ### 3. Policy-as-code
 Encode your organization's compliance rules as versioned YAML files. Ship
@@ -425,6 +425,9 @@ rai assess my_pkg:build_model --preset healthcare --dataset my-healthcare-eval -
 # Demo/smoke run with bundled examples
 rai assess my_pkg:build_model --preset healthcare --demo-datasets --output report.json
 
+# HR fairness/bias demo using small BBQ and BOLD slices
+rai assess my_pkg:build_model --preset hr --demo-datasets --output hr-report.json
+
 # List available reference datasets
 rai datasets list
 
@@ -480,7 +483,7 @@ PRs welcome. New here? Check the [good first issue](https://github.com/wandb/rai
 - Additional framework mappings (ISO 42001, Colorado AI Act, NYC LL144)
 - More red-team attack templates (with responsible disclosure)
 - Stronger LLM-judge coverage and prompts under `rai_toolkit/prompts`
-- Industry presets beyond healthcare / finance / government
+- Additional industry presets beyond the bundled healthcare / finance / government / HR set
 
 
 ## License
