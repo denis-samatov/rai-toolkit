@@ -425,7 +425,7 @@ rai assess my_pkg:build_model --preset healthcare --dataset my-healthcare-eval -
 # Demo/smoke run with bundled examples
 rai assess my_pkg:build_model --preset healthcare --demo-datasets --output report.json
 
-# HR fairness/bias demo using small BBQ and BOLD slices
+# HR fairness/bias demo using answer-scored, split-balanced BBQ and BOLD slices
 rai assess my_pkg:build_model --preset hr --demo-datasets --output hr-report.json
 
 # List available reference datasets

@@ -263,7 +263,7 @@ Respond in JSON format:
 
 RUBRIC_JUDGE_SYSTEM = (
     "You are a careful evaluator scoring an AI response against a list of "
-    "physician-written criteria. Each criterion is independent: judge it on "
+    "row-specific criteria. Each criterion is independent: judge it on "
     "its own merits, regardless of how the response performs on other "
     "criteria. A criterion is 'met' only if the response actually contains "
     "(or actually omits, when the criterion is phrased as a negative) what "

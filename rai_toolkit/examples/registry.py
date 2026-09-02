@@ -274,8 +274,39 @@ def _truthfulqa_generation_loader(limit: int) -> list[dict[str, Any]]:
     return rows
 
 
+def _normalize_bbq_row(row: dict[str, Any]) -> dict[str, Any] | None:
+    choices = [str(choice).strip() for choice in row.get("choices") or []]
+    try:
+        answer_idx = int(row.get("answer"))
+    except (TypeError, ValueError):
+        answer_idx = -1
+    expected = choices[answer_idx] if 0 <= answer_idx < len(choices) else ""
+    context = str(row.get("context") or "").strip()
+    question = str(row.get("question") or "").strip()
+    if not question or not choices or not expected:
+        return None
+
+    choice_lines = "\n".join(f"{i}. {choice}" for i, choice in enumerate(choices))
+    return {
+        "input_text": (
+            f"{context}\n\nQuestion: {question}\n\nChoices:\n{choice_lines}"
+        ).strip(),
+        # The source context is already included in ``input_text``. Leaving the
+        # scorer context empty prevents FactualityJudge from treating an
+        # intentionally ambiguous answer such as "Unknown" as ungrounded.
+        "context": "",
+        "expected": expected,
+        "category": "MIT-1.1",
+        "rubrics": [{
+            "criterion": f'The response selects "{expected}" as the correct answer.',
+            "points": 1,
+            "tags": ["bbq", "answer_accuracy"],
+        }],
+    }
+
+
 def _bbq_loader(limit: int) -> list[dict[str, Any]]:
-    """Load BBQ from an accessible parquet-backed mirror.
+    """Load a round-robin sample from BBQ's demographic splits.
 
     ``heegyu/bbq`` now requires deprecated dataset scripts. ``walledai/BBQ``
     exposes one split per social dimension with a simple multiple-choice
@@ -283,32 +314,30 @@ def _bbq_loader(limit: int) -> list[dict[str, Any]]:
     """
     load_dataset = _require_datasets()
     rows: list[dict[str, Any]] = []
-    for split in _BBQ_SPLITS:
-        ds = load_dataset("walledai/BBQ", split=split, streaming=True)
-        for row in ds:
-            choices = [str(c).strip() for c in row.get("choices") or []]
-            try:
-                answer_idx = int(row.get("answer"))
-            except (TypeError, ValueError):
-                answer_idx = -1
-            expected = choices[answer_idx] if 0 <= answer_idx < len(choices) else ""
-            context = str(row.get("context") or "").strip()
-            question = str(row.get("question") or "").strip()
-            if not question or not choices:
+    if limit <= 0:
+        return rows
+
+    active_streams = [
+        iter(load_dataset("walledai/BBQ", split=split, streaming=True))
+        for split in _BBQ_SPLITS
+    ]
+    while active_streams and len(rows) < limit:
+        next_streams = []
+        for stream in active_streams:
+            normalized_row = None
+            for raw_row in stream:
+                normalized_row = _normalize_bbq_row(raw_row)
+                if normalized_row is not None:
+                    break
+
+            if normalized_row is None:
                 continue
-            choice_lines = "\n".join(
-                f"{i}. {choice}" for i, choice in enumerate(choices)
-            )
-            rows.append({
-                "input_text": (
-                    f"{context}\n\nQuestion: {question}\n\nChoices:\n{choice_lines}"
-                ).strip(),
-                "context": context,
-                "expected": expected,
-                "category": "MIT-1.1",
-            })
+            rows.append(normalized_row)
+            next_streams.append(stream)
             if len(rows) >= limit:
                 return rows
+
+        active_streams = next_streams
     return rows
 
 
@@ -603,7 +632,10 @@ EXAMPLE_CATALOG: dict[str, ExampleDescriptor] = {
     "bbq": ExampleDescriptor(
         slug="bbq",
         name="BBQ (Bias Benchmark for QA)",
-        description="Measures social bias in QA systems across 9 demographic axes.",
+        description=(
+            "Measures social bias in QA systems across demographic axes using "
+            "round-robin split sampling and answer-aware rubrics."
+        ),
         risk_category="MIT-1.1",
         license="CC-BY-4.0",
         reference="https://arxiv.org/abs/2110.08193",

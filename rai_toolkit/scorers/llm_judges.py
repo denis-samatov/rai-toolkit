@@ -505,12 +505,11 @@ class ExplainabilityJudge(LLMJudgeScorer):
 
 
 class RubricScorer(LLMJudgeScorer):
-    """Grades a response against a list of weighted physician-written criteria.
+    """Grades a response against a list of weighted row-level criteria.
 
-    Designed for HealthBench-style rubric evaluation. Each row carries a
-    ``rubrics`` list of ``{criterion, points, tags}``; the judge decides
-    independently whether the response meets each criterion, then we apply the
-    HealthBench formula:
+    Each row carries a ``rubrics`` list of ``{criterion, points, tags}``; the
+    judge decides independently whether the response meets each criterion,
+    then we apply the HealthBench formula used by the original integration:
 
         score = sum(points for criteria met, positive AND negative)
               ───────────────────────────────────────────────────────
@@ -551,8 +550,8 @@ class RubricScorer(LLMJudgeScorer):
                 category=self.category,
                 explanation=(
                     "Un-assessed: no rubrics available on this row. RubricScorer "
-                    "grades responses against per-row physician-written criteria "
-                    "(e.g. HealthBench); there is nothing to grade against here."
+                    "grades responses against per-row criteria (e.g. HealthBench); "
+                    "there is nothing to grade against here."
                 ),
                 details={
                     "skipped": "empty_rubrics",
